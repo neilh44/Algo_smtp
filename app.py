@@ -27,10 +27,31 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Development CORS - allow all origins
+# Replace your CORS configuration in your Flask app with this:
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+app = Flask(__name__)
+
+# Updated CORS configuration to explicitly allow localhost:8080
 CORS(app, 
-     origins="*",  # Allow all origins for development
+     origins=[
+         "http://localhost:8080",      # Your React dev server
+         "http://localhost:3000",      # Common React dev port  
+         "http://127.0.0.1:8080",     # Alternative localhost
+         "https://automatealgos.in",   # Your production domain
+         "https://www.automatealgos.in", # WWW version
+         "*"  # Allow all origins (for development only)
+     ],
      methods=['GET', 'POST', 'OPTIONS'],
-     allow_headers=['Content-Type', 'Authorization', 'Accept']
+     allow_headers=['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+     supports_credentials=False,
+     expose_headers=['Content-Type', 'Authorization']
 )
 
 logger.info("Flask app initialized successfully")
@@ -108,6 +129,23 @@ def log_to_sheets(email, source_page, status):
         logger.error(f"Google Sheets logging failed for {email}: {str(e)}")
         return False
 
+# ADD MISSING ROOT ROUTE
+@app.route('/', methods=['GET'])
+def home():
+    """Root endpoint to confirm the app is running"""
+    logger.info("Root endpoint accessed")
+    return jsonify({
+        'message': 'AutomateAlgos Email API is running successfully!', 
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat(),
+        'endpoints': {
+            'health_check': '/api/health',
+            'email_submit': '/api/popup-submit (POST only)',
+            'cors_enabled': True
+        },
+        'version': '1.0.0'
+    })
+
 @app.route('/api/popup-submit', methods=['POST', 'OPTIONS'])
 def popup_submit():
     # Handle preflight OPTIONS request
@@ -163,7 +201,12 @@ def popup_submit():
 @app.route('/api/health', methods=['GET'])
 def health_check():
     logger.info("Health check endpoint accessed")
-    return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
+    return jsonify({
+        'status': 'healthy', 
+        'timestamp': datetime.now().isoformat(),
+        'service': 'AutomateAlgos Email API',
+        'cors_enabled': True
+    })
 
 if __name__ == '__main__':
     # Get port from environment variable (Render sets this automatically)
