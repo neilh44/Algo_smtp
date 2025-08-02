@@ -166,5 +166,9 @@ def health_check():
     return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
 
 if __name__ == '__main__':
-    logger.info("Starting Flask application on port 5000")
-    app.run(debug=True, port=5000)
+    # Get port from environment variable (Render sets this automatically)
+    port = int(os.environ.get('PORT', 5000))
+    
+    # Bind to 0.0.0.0 to allow external connections (required for Render)
+    logger.info(f"Starting Flask application on 0.0.0.0:{port}")
+    app.run(host='0.0.0.0', port=port, debug=False)  # Set debug=False for production
