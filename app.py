@@ -86,7 +86,7 @@ def send_email(to_email):
         logger.info(f"Attempting to send email to: {to_email}")
         
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "🎁 Your Free Trading Bonuses Worth ₹24,493 Are Here!"
+        msg['Subject'] = "🎁 Your Free Trading Bonuses Worth 10,496 Are Here!"
         msg['From'] = os.getenv('GMAIL_USER')
         msg['To'] = to_email
         
